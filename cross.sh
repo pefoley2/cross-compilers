@@ -42,19 +42,19 @@ install()
 # no deps
 conf mingw/mingw-w64-headers mingw-headers --target=${TARGET} --prefix=${DIR}/install/${TARGET} --enable-w32api
 build mingw-headers all
-install mingw-headers install
+test -e $DIR/install/${TARGET}/include/w32api/windows.h || install mingw-headers install
 
 conf binutils binutils --target=${TARGET} --prefix=${DIR}/install
 build binutils all-{binutils,ld,gas}
-install binutils install-{binutils,ld,gas}
+test -e $DIR/install/bin/${TARGET}-ld || install binutils install-{binutils,ld,gas}
 
 # needs binutils
 conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c
 build gcc1 all-gcc
-install gcc1 install-gcc
+test -e $DIR/install/bin/${TARGET}-gcc || install gcc1 install-gcc
 
 # needs gcc
-conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install
+conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin CC_FOR_TARGET=${DIR}/install/bin/${TARGET}-gcc
 build cygwin1 all-target-newlib
 install cygwin1 install-target-newlib
 
