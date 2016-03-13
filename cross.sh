@@ -5,6 +5,7 @@ DIR=`pwd`
 test -d src/gcc || git submodule add git://github.com/gcc-mirror/gcc src/gcc
 test -d src/binutils || git submodule add git://sourceware.org/git/binutils-gdb.git src/binutils
 test -d src/cygwin || git submodule add git://sourceware.org/git/newlib-cygwin.git src/cygwin
+test -d src/mingw || git submodule add https://github.com/mirror/mingw-w64 src/mingw
 test -n "$TARGET" || TARGET=x86_64-pc-cygwin
 test -n "$PARALLEL" || PARALLEL=$((`nproc`+1))
 mkdir -p logs
@@ -38,15 +39,26 @@ install()
     make -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/$work-install.log
 }
 
+# no deps
+conf mingw/mingw-w64-headers mingw-headers --target=${TARGET} --prefix=${DIR}/install/${TARGET} --enable-w32api
+build mingw-headers all
+install mingw-headers install
+
 conf binutils binutils --target=${TARGET} --prefix=${DIR}/install
 build binutils all-{binutils,ld,gas}
 install binutils install-{binutils,ld,gas}
 
+# needs binutils
 conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c
 build gcc1 all-gcc
-exit
 install gcc1 install-gcc
 
+# needs gcc
+conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install
+build cygwin1 all-target-newlib
+install cygwin1 install-target-newlib
+
+# needs newlib
 conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
 build gcc2 all
 install gcc2 install

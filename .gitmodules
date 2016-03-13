@@ -7,3 +7,6 @@
 [submodule "src/cygwin"]
 	path = src/cygwin
 	url = git://sourceware.org/git/newlib-cygwin.git
+[submodule "src/mingw"]
+	path = src/mingw
+	url = https://github.com/mirror/mingw-w64
