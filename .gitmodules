@@ -1,3 +1,9 @@
 [submodule "src/gcc"]
 	path = src/gcc
 	url = git://github.com/gcc-mirror/gcc
+[submodule "src/binutils"]
+	path = src/binutils
+	url = git://sourceware.org/git/binutils-gdb.git
+[submodule "src/cygwin"]
+	path = src/cygwin
+	url = git://sourceware.org/git/newlib-cygwin.git

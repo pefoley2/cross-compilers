@@ -5,6 +5,7 @@ test -d src/gcc || git submodule add git://github.com/gcc-mirror/gcc src/gcc
 test -d src/binutils || git submodule add git://sourceware.org/git/binutils-gdb.git src/binutils
 test -d src/cygwin || git submodule add git://sourceware.org/git/newlib-cygwin.git src/cygwin
 test -n $TARGET || TARGET=x86_64-pc-cygwin
+test -n $PARALLEL || PARALLEL=$((`nproc`+1))
 mkdir -p logs work/gcc1
 #mkdir -p work/{mingw-{headers,w64},gcc_bootstrap}
 
