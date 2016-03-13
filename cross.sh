@@ -4,8 +4,8 @@ DIR=`pwd`
 test -d src/gcc || git submodule add git://github.com/gcc-mirror/gcc src/gcc
 test -d src/binutils || git submodule add git://sourceware.org/git/binutils-gdb.git src/binutils
 test -d src/cygwin || git submodule add git://sourceware.org/git/newlib-cygwin.git src/cygwin
-test -z $TARGET || TARGET=x86_64-pc-cygwin
-test -z $PARALLEL || PARALLEL=$((`nproc`+1))
+test -n "$TARGET" || TARGET=x86_64-pc-cygwin
+test -n "$PARALLEL" || PARALLEL=$((`nproc`+1))
 mkdir -p logs work/gcc1
 #mkdir -p work/{mingw-{headers,w64},gcc_bootstrap}
 
@@ -15,9 +15,9 @@ mkdir -p logs work/gcc1
 
 cd work/gcc1
 test -f Makefile || $DIR/src/gcc/configure --target=${TARGET} --prefix=${DIR}/install --enable-languages=c |& tee $DIR/logs/gcc1.log
-make -j5
+make -j${PARALLEL}
 exit
-make all-host all-target-{libgcc,newlib} -j5
+make all-host all-target-{libgcc,newlib} -j${PARALLEL}
 test -f $DIR/install/bin/$TARGET-gcc || make install-host install-target-{libgcc,newlib} -j5
 
 #cd ../mingw-w64
