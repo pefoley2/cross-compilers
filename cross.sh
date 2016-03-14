@@ -1,20 +1,18 @@
 #!/bin/bash
 set -e
 set -o pipefail
+
 DIR=`pwd`
+
 test -d src/gcc || git submodule add git://github.com/gcc-mirror/gcc src/gcc
 test -d src/binutils || git submodule add git://sourceware.org/git/binutils-gdb.git src/binutils
 test -d src/cygwin || git submodule add git://sourceware.org/git/newlib-cygwin.git src/cygwin
 test -d src/mingw || git submodule add https://github.com/mirror/mingw-w64 src/mingw
-test -n "$TARGET" || TARGET=x86_64-pc-cygwin
-test -n "$PARALLEL" || PARALLEL=$((`nproc`+1))
 mkdir -p logs
 
+test -n "$TARGET" || TARGET=x86_64-pc-cygwin
+test -n "$PARALLEL" || PARALLEL=$((`nproc`+1))
 TARGET_PREFIX=${DIR}/install/bin/${TARGET}
-
-#cd work/mingw-headers
-#test -f Makefile || ($DIR/src/mingw-w64/mingw-w64-headers/configure --host=${TARGET} --prefix=${DIR}/install/${TARGET} || rm Makefile)
-#test -f $DIR/install/$TARGET/include/_mingw_mac.h || make install
 
 conf()
 {
@@ -31,14 +29,14 @@ build()
 {
     work=$1
     shift
-    make --no-print-directory -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/$work-build.log
+    make --no-print-directory -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/`echo $work|sed 's#/#_#g'`-build.log
 }
 
 install()
 {
     work=$1
     shift
-    make -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/$work-install.log
+    make -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/`echo $work|sed 's#/#_#g'`-install.log
 }
 
 # no deps
@@ -83,7 +81,6 @@ test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || build mingw-crt all
 test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || install mingw-crt install
 
 # FIXME: shouldn't need this.
-mkdir -p ${DIR}/install/${TARGET}/lib/
 test -e ${DIR}/install/${TARGET}/lib/libcygwin.a || ar r ${DIR}/install/${TARGET}/lib/libcygwin.a
 test -e ${DIR}/install/${TARGET}/lib/crt0.o || ${TARGET_PREFIX}-gcc -c $DIR/crt.c -o ${DIR}/install/${TARGET}/lib/crt0.o
 
@@ -92,11 +89,21 @@ build gcc1 all-target-libstdc++-v3
 test -e $DIR/install/${TARGET}/lib/libstdc++.a || install gcc1 install-target-libstdc++-v3
 
 # needs libstdc++-v3
-build cygwin1 all MINGW64_CC=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-gcc \
-    MINGW_CXX=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-g++
-test -e $DIR/install/${TARGET}/lib/libcygwin.dll || install cygwin1 install
+# FIXME: objcopy for target
+# FIXME: bootstrap just cygwin
+build cygwin1 configure-target-winsup MINGW64_CC=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-gcc \
+    MINGW_CXX=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-g++ OBJCOPY=${TARGET_PREFIX}-objcopy
+build cygwin1/${TARGET}/winsup cygwin
+test -e $DIR/install/${TARGET}/lib/cygwin1.dll || install cygwin1/${TARGET}/winsup/cygwin install-libs
 
 # needs cygwin
-conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install
+conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
 build gcc2 all
-install gcc2 install
+test -e $DIR/install/${TARGET}/lib/cyggcc_s-seh-1.dll || install gcc2 install
+
+# needs shared libgcc
+# FIXME: windres for target
+conf cygwin cygwin2 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
+    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
+build cygwin2 all
+install cygwin2 install
