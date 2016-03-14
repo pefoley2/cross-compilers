@@ -111,11 +111,10 @@ test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || install mingw-crt ins
 
 # FIXME: shouldn't need this.
 test -e ${DIR}/install/${TARGET}/lib/libcygwin.a || ar r ${DIR}/install/${TARGET}/lib/libcygwin.a
-test -e ${DIR}/install/${TARGET}/lib/crt0.o || (echo > /tmp/crt.c << EOF
+test -e ${DIR}/install/${TARGET}/lib/crt0.o || ${TARGET_PREFIX}-gcc -xc -c - -o ${DIR}/install/${TARGET}/lib/crt0.o << EOF
   void __main(void) {}
   int atexit(void (*function)(void)) {}
 EOF
-${TARGET_PREFIX}-gcc -c $DIR/crt.c -o ${DIR}/install/${TARGET}/lib/crt0.o)
 
 # need mingw-crt
 build gcc1 all-target-libstdc++-v3
