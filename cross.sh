@@ -8,7 +8,7 @@ test -d src/gcc       || git submodule add git://github.com/gcc-mirror/gcc src/g
 test -d src/binutils  || git submodule add git://sourceware.org/git/binutils-gdb.git src/binutils
 test -d src/cygwin    || git submodule add git://sourceware.org/git/newlib-cygwin.git src/cygwin
 test -d src/mingw     || git submodule add https://github.com/mirror/mingw-w64 src/mingw
-test -d src/zlib      || git submodule add https://github.com/madler/zlib src/zlib
+test -d src/zlib      || (mkdir src/zlib; wget http://zlib.net/zlib-1.2.8.tar.gz -O - | tar x -C src/zlib)
 mkdir -p logs
 
 test -n "$PARALLEL" || PARALLEL=$((`nproc`+1))
@@ -111,7 +111,11 @@ test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || install mingw-crt ins
 
 # FIXME: shouldn't need this.
 test -e ${DIR}/install/${TARGET}/lib/libcygwin.a || ar r ${DIR}/install/${TARGET}/lib/libcygwin.a
-test -e ${DIR}/install/${TARGET}/lib/crt0.o || ${TARGET_PREFIX}-gcc -c $DIR/crt.c -o ${DIR}/install/${TARGET}/lib/crt0.o
+test -e ${DIR}/install/${TARGET}/lib/crt0.o || (echo > /tmp/crt.c << EOF
+  void __main(void) {}
+  int atexit(void (*function)(void)) {}
+EOF
+${TARGET_PREFIX}-gcc -c $DIR/crt.c -o ${DIR}/install/${TARGET}/lib/crt0.o)
 
 # need mingw-crt
 build gcc1 all-target-libstdc++-v3
