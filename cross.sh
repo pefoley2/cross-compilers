@@ -8,7 +8,7 @@ test -d src/gcc       || git submodule add git://github.com/gcc-mirror/gcc src/g
 test -d src/binutils  || git submodule add git://sourceware.org/git/binutils-gdb.git src/binutils
 test -d src/cygwin    || git submodule add git://sourceware.org/git/newlib-cygwin.git src/cygwin
 test -d src/mingw     || git submodule add https://github.com/mirror/mingw-w64 src/mingw
-test -d src/zlib      || (mkdir src/zlib; wget http://zlib.net/zlib-1.2.8.tar.gz -O - | tar x -C src/zlib)
+test -d src/zlib      || (wget -q http://zlib.net/zlib-1.2.8.tar.gz -O - | tar xz -C src; mv src/zlib-1.2.8 src/zlib)
 mkdir -p logs
 
 test -n "$PARALLEL" || PARALLEL=$((`nproc`+1))

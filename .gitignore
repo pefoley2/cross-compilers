@@ -1,4 +1,5 @@
 *.swp
+src/zlib
 logs
 work
 install
