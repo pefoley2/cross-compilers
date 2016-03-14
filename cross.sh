@@ -46,22 +46,24 @@ conf mingw/mingw-w64-headers mingw-headers --target=${TARGET} --prefix=${DIR}/in
 build mingw-headers all
 test -e $DIR/install/${TARGET}/include/w32api/windows.h || install mingw-headers install
 
+# no deps
 conf binutils binutils --target=${TARGET} --prefix=${DIR}/install
 build binutils all-{binutils,ld,gas}
 test -e $DIR/install/bin/${TARGET}-ld || install binutils install-{binutils,ld,gas}
 
-# needs binutils?
+# no deps
 conf gcc mingw-gcc --target=x86_64-w64-mingw32 --prefix=${DIR}/install --enable-languages=c++
 build mingw-gcc all-gcc
 test -e $DIR/install/bin/x86_64-w64-mingw32-gcc || install mingw-gcc install-gcc
 
-# needs binutils
-conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
+# needs binutils for target libs
+conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++ --disable-shared
 build gcc1 all-gcc
 test -e $DIR/install/bin/${TARGET}-gcc || install gcc1 install-gcc
 
 # needs gcc
-conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin CC_FOR_TARGET=${TARGET_PREFIX}-gcc
+conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
+    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
 build cygwin1 all-target-newlib
 test -e $DIR/install/${TARGET}/lib/libc.a || install cygwin1 install-target-newlib
 
@@ -77,10 +79,24 @@ test -e $DIR/install/${TARGET}/include/cygwin/config.h || install cygwin-headers
 # FIXME: --with-build-time-tools
 conf mingw/mingw-w64-crt mingw-crt --target=${TARGET} --prefix=${DIR}/install/${TARGET} --enable-w32api --disable-lib32 \
     CC=${TARGET_PREFIX}-gcc DLLTOOL=${TARGET_PREFIX}-dlltool AS=${TARGET_PREFIX}-as AR=${TARGET_PREFIX}-ar RANLIB=${TARGET_PREFIX}-ranlib
-build mingw-crt all
-install mingw-crt install
+test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || build mingw-crt all
+test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || install mingw-crt install
 
-# needs newlib
-conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
+# FIXME: shouldn't need this.
+mkdir -p ${DIR}/install/${TARGET}/lib/
+test -e ${DIR}/install/${TARGET}/lib/libcygwin.a || ar r ${DIR}/install/${TARGET}/lib/libcygwin.a
+test -e ${DIR}/install/${TARGET}/lib/crt0.o || ${TARGET_PREFIX}-gcc -c $DIR/crt.c -o ${DIR}/install/${TARGET}/lib/crt0.o
+
+# needs mingw-crt
+build gcc1 all-target-libstdc++-v3
+test -e $DIR/install/${TARGET}/lib/libstdc++.a || install gcc1 install-target-libstdc++-v3
+
+# needs libstdc++-v3
+build cygwin1 all MINGW64_CC=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-gcc \
+    MINGW_CXX=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-g++
+test -e $DIR/install/${TARGET}/lib/libcygwin.dll || install cygwin1 install
+
+# needs cygwin
+conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install
 build gcc2 all
 install gcc2 install
