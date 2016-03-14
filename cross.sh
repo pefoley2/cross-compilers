@@ -70,7 +70,7 @@ test -e ${MINGW_PREFIX}-gcc || install mingw-gcc install-gcc
 
 # need mingw-gcc
 cd $DIR/src/zlib
-test -e $DIR/src/zlib/Makefile || CROSS_PREFIX=$DIR/install/bin/${MINGW}- ./configure --prefix=$DIR/install/${MINGW}
+test -e libz.a || CROSS_PREFIX=$DIR/install/bin/${MINGW}- ./configure --prefix=$DIR/install/${MINGW}
 test -e $DIR/install/${MINGW}/lib/libz.a || make -j${PARALLEL} -C $DIR/src/zlib install
 
 # need mingw-gcc
