@@ -99,7 +99,7 @@ mkdir -p ${DIR}/install/${TARGET}/lib/w32api
 test -e ${DIR}/install/${TARGET}/lib/w32api/libntdll.a || ar r ${DIR}/install/${TARGET}/lib/w32api/libntdll.a
 
 # need gcc1
-conf cygwin/winsup/cygwin cygwin-headers --target=${TARGET} --prefix=${DIR}/install CC=${TARGET_PREFIX}-gcc
+conf cygwin/winsup/cygwin cygwin-headers --host=${TARGET} --prefix=${DIR}/install CC=${TARGET_PREFIX}-gcc
 test -e $DIR/install/${TARGET}/include/cygwin/config.h || install cygwin-headers install-headers
 
 # needs cygwin-headers
