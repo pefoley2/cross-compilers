@@ -81,7 +81,7 @@ test -e $DIR/install/${MINGW}/lib/libkernel32.a || install mingw-crt-native inst
 
 # need mingw-crt-native
 build mingw-gcc all-target-libstdc++-v3
-test -e ${DIR}/install/${MINGW}/lib/libstdc++.so || install mingw-gcc install-target-libstdc++-v3
+test -e ${DIR}/install/${MINGW}/lib/libstdc++-6.dll || install mingw-gcc install-target-libstdc++-v3
 
 # need binutils
 conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++ --disable-shared
