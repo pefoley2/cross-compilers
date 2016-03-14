@@ -10,3 +10,6 @@
 [submodule "src/mingw"]
 	path = src/mingw
 	url = https://github.com/mirror/mingw-w64
+[submodule "src/zlib"]
+	path = src/zlib
+	url = https://github.com/madler/zlib
