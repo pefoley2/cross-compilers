@@ -105,5 +105,6 @@ test -e $DIR/install/${TARGET}/lib/cyggcc_s-seh-1.dll || install gcc2 install
 # FIXME: windres for target
 conf cygwin cygwin2 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
     CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
-build cygwin2 all
+build cygwin2 all MINGW64_CC=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-gcc \
+    MINGW_CXX=${DIR}/install/${TARGET}/bin/x86_64-w64-mingw32-g++ OBJCOPY=${TARGET_PREFIX}-objcopy
 install cygwin2 install
