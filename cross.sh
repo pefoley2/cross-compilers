@@ -64,7 +64,7 @@ build mingw-binutils all-{binutils,ld,gas}
 test -e ${MINGW_PREFIX}-ld || install mingw-binutils install-{binutils,ld,gas}
 
 # need mingw-binutils
-conf gcc mingw-gcc --target=${MINGW} --prefix=${DIR}/install --enable-languages=c++
+conf gcc mingw-gcc --target=${MINGW} --prefix=${DIR}/install --enable-languages=c++ --disable-multilib
 build mingw-gcc all-gcc
 test -e ${MINGW_PREFIX}-gcc || install mingw-gcc install-gcc
 
@@ -78,6 +78,10 @@ conf mingw/mingw-w64-crt mingw-crt-native --host=${MINGW} --prefix=${DIR}/instal
     CC=${MINGW_PREFIX}-gcc DLLTOOL=${MINGW_PREFIX}-dlltool AS=${MINGW_PREFIX}-as AR=${MINGW_PREFIX}-ar RANLIB=${MINGW_PREFIX}-ranlib
 build mingw-crt-native all
 test -e $DIR/install/${MINGW}/lib/libkernel32.a || install mingw-crt-native install
+
+# need mingw-crt-native
+build mingw-gcc all-target-libstdc++-v3
+test -e ${DIR}/install/${MINGW}/lib/libstdc++.so || install mingw-gcc install-target-libstdc++-v3
 
 # need binutils
 conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++ --disable-shared
