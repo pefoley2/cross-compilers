@@ -85,7 +85,7 @@ test -e ${TARGET_PREFIX}-ld || install binutils install-{binutils,ld,gas}
 
 # need binutils
 conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++ --disable-shared --with-newlib
-build gcc1 all-gcc all-target-libstdc++-v3
+build gcc1 all-gcc
 test -e $DIR/install/bin/${TARGET}-gcc || install gcc1 install-gcc
 
 # need gcc1
@@ -120,15 +120,15 @@ test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || install mingw-crt ins
 #  int atexit(void (*function)(void)) {}
 #EOF
 
-# need mingw-crt
+# needs cygwin-headers
 build gcc1 all-target-libstdc++-v3
 test -e $DIR/install/${TARGET}/lib/libstdc++.a || install gcc1 install-target-libstdc++-v3
 
 # need libstdc++-v3
-# FIXME: bootstrap just cygwin
+# need mingw-crt
 #MINGW64_CC=${DIR}/install/${TARGET}/bin/${MINGW}-gcc MINGW_CXX=${DIR}/install/${TARGET}/bin/${MINGW}-g++
-build cygwin1/${TARGET}/winsup cygwin
-test -e $DIR/install/${TARGET}/lib/cygwin1.dll || install cygwin1/${TARGET}/winsup/cygwin install-libs
+build cygwin1 all
+test -e $DIR/install/${TARGET}/lib/cygwin1.dll || install cygwin1 install
 
 # need cygwin1
 conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
