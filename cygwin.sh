@@ -139,4 +139,4 @@ conf cygwin cygwin2 --target=${TARGET} --prefix=${DIR}/install --with-build-time
     CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
 build cygwin2 all MINGW64_CC=${DIR}/install/bin/${MINGW}-gcc \
     MINGW_CXX=${DIR}/install/bin/${MINGW}-g++ OBJCOPY=${TARGET_PREFIX}-objcopy
-install cygwin2 install
+test -e $DIR/install/bin/cyglsa64.dll || install cygwin2 install
