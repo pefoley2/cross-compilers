@@ -85,6 +85,6 @@ build cygwin2 all
 test -e $DIR/install/bin/cyglsa64.dll || install cygwin2 install
 
 # need cygwin2
-conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install
+conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
 build gcc2 all
 test -e $DIR/install/${TARGET}/lib/cyggcc_s-seh-1.dll || install gcc2 install
