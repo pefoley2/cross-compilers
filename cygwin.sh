@@ -78,10 +78,9 @@ build gcc1 all-target-libstdc++-v3
 test -e $DIR/install/${TARGET}/lib/libstdc++.a || install gcc1 install-target-libstdc++-v3
 
 # need libstdc++-v3
+# FIXME: windres for target
 conf cygwin cygwin2 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
-    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++
-# FIXME: objcopy for target
-#OBJCOPY=${TARGET_PREFIX}-objcopy
+    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
 build cygwin2 all
 test -e $DIR/install/bin/cyglsa64.dll || install cygwin2 install
 
