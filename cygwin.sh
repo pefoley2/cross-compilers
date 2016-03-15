@@ -13,9 +13,7 @@ mkdir -p logs
 test -n "$PARALLEL" || PARALLEL=$((`nproc`+1))
 
 TARGET=x86_64-pc-cygwin
-MINGW=x86_64-w64-mingw32
 TARGET_PREFIX=${DIR}/install/bin/${TARGET}
-MINGW_PREFIX=${DIR}/install/bin/${MINGW}
 
 conf()
 {
@@ -32,14 +30,14 @@ build()
 {
     work=$1
     shift
-    make --no-print-directory -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/`echo $work|sed 's#/#_#g'`-build.log
+    make --no-print-directory -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/$work-build.log
 }
 
 install()
 {
     work=$1
     shift
-    make -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/`echo $work|sed 's#/#_#g'`-install.log
+    make -j${PARALLEL} -C $DIR/work/$work $@ |& tee $DIR/logs/$work-install.log
 }
 
 # no deps
@@ -58,17 +56,15 @@ build gcc1 all-gcc
 test -e $DIR/install/bin/${TARGET}-gcc || install gcc1 install-gcc
 
 # need gcc1
-# FIXME: target tools
+# FIXME: CC/CXX_FOR_TARGET
 conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
-    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres --with-only-headers
+    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ --with-only-headers
 build cygwin1 all-target-newlib
 test -e $DIR/install/${TARGET}/lib/libc.a || install cygwin1 install-target-newlib
 
 # need gcc1
-# FIXME: objcopy for target
-build cygwin1 configure-target-winsup OBJCOPY=${TARGET_PREFIX}-objcopy
-# FIXME: winsup-level target
-test -e $DIR/install/${TARGET}/include/cygwin/config.h || install cygwin1/${TARGET}/winsup/cygwin install-headers
+build cygwin1 configure-target-winsup
+test -e $DIR/install/${TARGET}/include/cygwin/config.h || install cygwin1 install-target-winsup
 
 # needs cygwin-headers
 # FIXME: --with-build-time-tools
@@ -82,17 +78,14 @@ build gcc1 all-target-libstdc++-v3
 test -e $DIR/install/${TARGET}/lib/libstdc++.a || install gcc1 install-target-libstdc++-v3
 
 # need libstdc++-v3
-build cygwin1 all
-test -e $DIR/install/${TARGET}/lib/cygwin1.dll || install cygwin1 install
+conf cygwin cygwin2 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
+    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++
+# FIXME: objcopy for target
+#OBJCOPY=${TARGET_PREFIX}-objcopy
+build cygwin2 all
+test -e $DIR/install/bin/cyglsa64.dll || install cygwin2 install
 
-# need cygwin1
-conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
+# need cygwin2
+conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install
 build gcc2 all
 test -e $DIR/install/${TARGET}/lib/cyggcc_s-seh-1.dll || install gcc2 install
-
-# needs gcc2
-# FIXME: windres for target
-conf cygwin cygwin2 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
-    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
-build cygwin2 all OBJCOPY=${TARGET_PREFIX}-objcopy
-test -e $DIR/install/bin/cyglsa64.dll || install cygwin2 install
