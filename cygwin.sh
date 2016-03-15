@@ -89,18 +89,21 @@ build gcc1 all-gcc
 test -e $DIR/install/bin/${TARGET}-gcc || install gcc1 install-gcc
 
 # need gcc1
+# FIXME: target tools
 conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
     CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
 build cygwin1 all-target-newlib
 test -e $DIR/install/${TARGET}/lib/libc.a || install cygwin1 install-target-newlib
 
 # FIXME: shouldn't need this.
-mkdir -p ${DIR}/install/${TARGET}/lib/w32api
-test -e ${DIR}/install/${TARGET}/lib/w32api/libntdll.a || ar r ${DIR}/install/${TARGET}/lib/w32api/libntdll.a
+#mkdir -p ${DIR}/install/${TARGET}/lib/w32api
+#test -e ${DIR}/install/${TARGET}/lib/w32api/libntdll.a || ar r ${DIR}/install/${TARGET}/lib/w32api/libntdll.a
 
 # need gcc1
-conf cygwin/winsup/cygwin cygwin-headers --host=${TARGET} --prefix=${DIR}/install/${TARGET} CC=${TARGET_PREFIX}-gcc
-test -e $DIR/install/${TARGET}/include/cygwin/config.h || install cygwin-headers install-headers
+#conf cygwin/winsup/cygwin cygwin-headers --host=${TARGET} --prefix=${DIR}/install/${TARGET} CC=${TARGET_PREFIX}-gcc
+build cygwin1 configure-target-cygwin
+# FIXME: winsup-level target
+test -e $DIR/install/${TARGET}/include/cygwin/config.h || install cygwin1/${TARGET}/winsup/cygwin install-headers
 
 # needs cygwin-headers
 # FIXME: --with-build-time-tools
@@ -110,11 +113,11 @@ build mingw-crt all
 test -e $DIR/install/${TARGET}/lib/w32api/libkernel32.a || install mingw-crt install
 
 # FIXME: shouldn't need this.
-test -e ${DIR}/install/${TARGET}/lib/libcygwin.a || ar r ${DIR}/install/${TARGET}/lib/libcygwin.a
-test -e ${DIR}/install/${TARGET}/lib/crt0.o || ${TARGET_PREFIX}-gcc -xc -c - -o ${DIR}/install/${TARGET}/lib/crt0.o << EOF
-  void __main(void) {}
-  int atexit(void (*function)(void)) {}
-EOF
+#test -e ${DIR}/install/${TARGET}/lib/libcygwin.a || ar r ${DIR}/install/${TARGET}/lib/libcygwin.a
+#test -e ${DIR}/install/${TARGET}/lib/crt0.o || ${TARGET_PREFIX}-gcc -xc -c - -o ${DIR}/install/${TARGET}/lib/crt0.o << EOF
+#  void __main(void) {}
+#  int atexit(void (*function)(void)) {}
+#EOF
 
 # need mingw-crt
 build gcc1 all-target-libstdc++-v3
