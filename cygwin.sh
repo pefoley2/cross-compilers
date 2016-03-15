@@ -44,19 +44,9 @@ install()
 }
 
 # no deps
-conf mingw/mingw-w64-headers mingw-headers --target=${TARGET} --prefix=${DIR}/install/${TARGET} --enable-w32api
-build mingw-headers all
-test -e $DIR/install/${TARGET}/include/w32api/windows.h || install mingw-headers install
-
-# no deps
 #conf mingw/mingw-w64-headers mingw-headers-native --target=${MINGW} --prefix=${DIR}/install/${MINGW}
 #build mingw-headers-native all
 #test -e $DIR/install/${MINGW}/include/windows.h || install mingw-headers-native install
-
-# no deps
-conf binutils binutils --target=${TARGET} --prefix=${DIR}/install
-build binutils all-{binutils,ld,gas}
-test -e ${TARGET_PREFIX}-ld || install binutils install-{binutils,ld,gas}
 
 # no deps
 #conf binutils mingw-binutils --target=${MINGW} --prefix=${DIR}/install
@@ -83,15 +73,25 @@ test -e ${TARGET_PREFIX}-ld || install binutils install-{binutils,ld,gas}
 #build mingw-gcc all-target-libstdc++-v3
 #test -e ${DIR}/install/${MINGW}/lib/libstdc++-6.dll || install mingw-gcc install-target-libstdc++-v3
 
+# no deps
+conf mingw/mingw-w64-headers mingw-headers --target=${TARGET} --prefix=${DIR}/install/${TARGET} --enable-w32api
+build mingw-headers all
+test -e $DIR/install/${TARGET}/include/w32api/windows.h || install mingw-headers install
+
+# no deps
+conf binutils binutils --target=${TARGET} --prefix=${DIR}/install
+build binutils all-{binutils,ld,gas}
+test -e ${TARGET_PREFIX}-ld || install binutils install-{binutils,ld,gas}
+
 # need binutils
-conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++ --disable-shared
-build gcc1 all-gcc
+conf gcc gcc1 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++ --disable-shared --with-newlib
+build gcc1 all-gcc all-target-libstdc++-v3
 test -e $DIR/install/bin/${TARGET}-gcc || install gcc1 install-gcc
 
 # need gcc1
 # FIXME: target tools
 conf cygwin cygwin1 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
-    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
+    CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres --with-only-headers
 build cygwin1 all-target-newlib
 test -e $DIR/install/${TARGET}/lib/libc.a || install cygwin1 install-target-newlib
 
@@ -101,7 +101,8 @@ test -e $DIR/install/${TARGET}/lib/libc.a || install cygwin1 install-target-newl
 
 # need gcc1
 #conf cygwin/winsup/cygwin cygwin-headers --host=${TARGET} --prefix=${DIR}/install/${TARGET} CC=${TARGET_PREFIX}-gcc
-build cygwin1 configure-target-cygwin
+# FIXME: objcopy for target
+build cygwin1 configure-target-winsup OBJCOPY=${TARGET_PREFIX}-objcopy
 # FIXME: winsup-level target
 test -e $DIR/install/${TARGET}/include/cygwin/config.h || install cygwin1/${TARGET}/winsup/cygwin install-headers
 
@@ -124,9 +125,7 @@ build gcc1 all-target-libstdc++-v3
 test -e $DIR/install/${TARGET}/lib/libstdc++.a || install gcc1 install-target-libstdc++-v3
 
 # need libstdc++-v3
-# FIXME: objcopy for target
 # FIXME: bootstrap just cygwin
-build cygwin1 configure-target-winsup OBJCOPY=${TARGET_PREFIX}-objcopy
 #MINGW64_CC=${DIR}/install/${TARGET}/bin/${MINGW}-gcc MINGW_CXX=${DIR}/install/${TARGET}/bin/${MINGW}-g++
 build cygwin1/${TARGET}/winsup cygwin
 test -e $DIR/install/${TARGET}/lib/cygwin1.dll || install cygwin1/${TARGET}/winsup/cygwin install-libs
