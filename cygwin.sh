@@ -82,7 +82,7 @@ test -e $DIR/install/${TARGET}/lib/libstdc++.a || install gcc1 install-target-li
 conf cygwin cygwin2 --target=${TARGET} --prefix=${DIR}/install --with-build-time-tools=${DIR}/install/${TARGET}/bin \
     CC_FOR_TARGET=${TARGET_PREFIX}-gcc CXX_FOR_TARGET=${TARGET_PREFIX}-g++ WINDRES_FOR_TARGET=${TARGET_PREFIX}-windres
 build cygwin2 all
-test -e $DIR/install/bin/cyglsa64.dll || install cygwin2 install
+test -e $DIR/install/bin/cygserver-config || install cygwin2 install
 
 # need cygwin2
 conf gcc gcc2 --target=${TARGET} --prefix=${DIR}/install --enable-languages=c++
